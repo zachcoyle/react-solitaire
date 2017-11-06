@@ -1,15 +1,23 @@
-import React, {Component} from 'react'
-import {render} from 'react-dom'
+import React, { Component } from "react";
+import { render } from "react-dom";
 
-import Example from '../../src'
+import withSolitaire from "../../src";
 
-class Demo extends Component {
-  render() {
-    return <div>
-      <h1>react-solitaire Demo</h1>
-      <Example/>
-    </div>
-  }
-}
+import Button from "./DemoButton";
 
-render(<Demo/>, document.querySelector('#demo'))
+const Demo = () => (
+  <div>
+    <h1>react-solitaire Demo</h1>
+  </div>
+);
+
+const HelloWorld = () => <h1>Hello, World!</h1>;
+const Emoji = () => <div style={{ fontSize: "82px" }}>🐈🦇🌚</div>;
+
+const components = {
+  HelloWorld,
+  Emoji,
+  Button
+};
+
+render(withSolitaire(components)(Demo), document.querySelector("#demo"));
