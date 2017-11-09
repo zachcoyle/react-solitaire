@@ -1,5 +1,5 @@
 import React from "react";
-import { withState } from "recompose";
+import { withState, compose } from "recompose";
 import { keys, mapObjIndexed, pipe, pathOr } from "ramda";
 
 const mapComponents = mapObjIndexed((num, key, obj) => <obj key={num} />);
@@ -35,64 +35,87 @@ const Button = ({ title, selected, onClick = () => {} }) => (
   </a>
 );
 
-const ComponentSelector = ({ components, state, setState }) =>
-  console.warn("screen", window.screen) || (
-    <div style={componentSelectorStyle}>
+const ComponentSelector = ({ components, state, setState }) => (
+  <div style={componentSelectorStyle}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        borderBottom: "1px solid black",
+        fontSize: "25px",
+        padding: "10px"
+      }}
+    >
+      ♠
+    </div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        borderBottom: "1px solid black",
+        fontSize: "15px",
+        padding: "10px"
+      }}
+    >
+      <a
+        href="#"
+        onClick={() => setState({ ...state, useHOCs: !state.useHOCs })}
+      >
+        Turn higher order components {state.useHOCs ? "off" : "on"}
+      </a>
+    </div>
+    {keys(components).map((name, index) => (
+      <Button
+        title={name}
+        selected={name === state.selectedComponent}
+        onClick={() => {
+          setState({ ...state, selectedComponent: name });
+        }}
+        key={index}
+      />
+    ))}
+  </div>
+);
+
+const NoneSelected = () => <div>Select a component</div>;
+
+const Solitaire = ({ state, setState, hocs, components, AppComponent }) => {
+  const SelectedComponent = pathOr(
+    NoneSelected,
+    [state.selectedComponent],
+    components
+  );
+  const DisplayComponent = state.useHOCs
+    ? compose(...hocs)(SelectedComponent)
+    : SelectedComponent;
+
+  return (
+    <div style={solitaireStyle}>
+      <ComponentSelector
+        state={state}
+        setState={setState}
+        components={components}
+      />
       <div
         style={{
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
-          borderBottom: "1px solid black",
-          fontSize: "25px",
-          padding: "10px"
+          flexGrow: "1"
         }}
       >
-        ♠
+        <DisplayComponent />
       </div>
-      {keys(components).map(name => (
-        <Button
-          title={name}
-          selected={name === state.selectedComponent}
-          onClick={() => {
-            setState({ ...state, selectedComponent: name });
-          }}
-        />
-      ))}
     </div>
   );
+};
 
-const SolitaryConfinement = ({ Component }) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      flexGrow: "1"
-    }}
-  >
-    <Component />
-  </div>
-);
-
-const NoneSelected = () => <div>Select a component</div>;
-
-const Solitaire = ({ state, setState, components, AppComponent }) => (
-  <div style={solitaireStyle}>
-    <ComponentSelector
-      state={state}
-      setState={setState}
-      components={components}
-    />
-
-    <SolitaryConfinement
-      Component={pathOr(NoneSelected, [state.selectedComponent], components)}
-    />
-  </div>
-);
-
-export default withState("state", "setState", { selectedComponent: undefined })(
-  Solitaire
-);
+export default withState("state", "setState", {
+  selectedComponent: undefined,
+  useHOCs: true
+})(Solitaire);
